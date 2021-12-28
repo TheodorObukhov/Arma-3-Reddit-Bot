@@ -68,33 +68,47 @@ class driverVars:
                 print("Cannot find element. Trying again.")
                 time.sleep(1)
 
-        # def click(path):
-        #     btn = self.driver.find_element(By.XPATH, path)
-        #     ActionChains(self.driver).move_to_element(btn).click(btn).perform()
-        #     ActionChains(self.driver).reset_actions()
+        def click(path, keys=[]):
+            btn = self.driver.find_element(By.XPATH, path)
+            clickAction = ActionChains(self.driver).move_to_element(btn).click(btn)
+            withKeys = clickAction.send_keys(*keys) if keys else clickAction
+            withKeys.perform()
+            ActionChains(self.driver).reset_actions()
             
-        postOpen = self.driver.find_element(By.XPATH,'/html/body/div[3]/div[2]/div/div/a') 
-        ActionChains(self.driver).move_to_element(postOpen).click(postOpen).perform() #Finds and clicks on 'Post' button
-        ActionChains(self.driver).reset_actions()
-
-        textButton = self.driver.find_element(By.XPATH,'//*[@id="newlink"]/ul/li[2]/a')
-        ActionChains(self.driver).move_to_element(textButton).click(textButton).perform() #Finds and click on 'text' button
-        ActionChains(self.driver).reset_actions()
-
-        titleField = self.driver.find_element(By.XPATH,'//*[@id="title-field"]/div/textarea')
-        ActionChains(self.driver).move_to_element(titleField).click(titleField).send_keys(title).perform() #Finds, clicks on, and sends keys to Title field
-        ActionChains(self.driver).reset_actions()
-
-        textField = self.driver.find_element(By.XPATH,'//*[@id="text-field"]/div/div/div/div[1]/textarea')
-        ActionChains(self.driver).move_to_element(textField).click(textField).send_keys(groupStatement).send_keys(Keys.ENTER).send_keys(Keys.ENTER).send_keys(styleStatement).send_keys(Keys.ENTER).send_keys(Keys.ENTER).send_keys(languageStatement).send_keys(Keys.ENTER).send_keys(Keys.ENTER).send_keys(opTimes).send_keys(Keys.ENTER).send_keys(Keys.ENTER).send_keys(opType).send_keys(Keys.ENTER).send_keys(Keys.ENTER).send_keys(mainStatement).send_keys(Keys.ENTER).send_keys(Keys.ENTER).send_keys(secondStatement).send_keys(Keys.ENTER).send_keys(Keys.ENTER).perform() #Finds, clicks on, and sends keys to main field
-        ActionChains(self.driver).reset_actions()
-
-        flairButton = self.driver.find_element(By.XPATH,'//*[@id="flair-field"]/div/div/button')
-        ActionChains(self.driver).move_to_element(flairButton).click(flairButton).perform() #Finds button to open 'flair' option fields
-        ActionChains(self.driver).reset_actions()
+        click('/html/body/div[3]/div[2]/div/div/a') #Finds and clicks on 'Post' button
+        click('//*[@id="newlink"]/ul/li[2]/a') # Finds and click on 'text' button
+        click('//*[@id="title-field"]/div/textarea', [title]) # Finds, clicks on, and sends keys to Title field
+        click(
+            '//*[@id="text-field"]/div/div/div/div[1]/textarea',
+            [
+                groupStatement,
+                Keys.ENTER,
+                Keys.ENTER,
+                styleStatement,
+                Keys.ENTER,
+                Keys.ENTER,
+                languageStatement,
+                Keys.ENTER,
+                Keys.ENTER,
+                opTimes,
+                Keys.ENTER,
+                Keys.ENTER,
+                opType,
+                Keys.ENTER,
+                Keys.ENTER,
+                mainStatement,
+                Keys.ENTER,
+                Keys.ENTER,
+                secondStatement,
+                Keys.ENTER,
+                Keys.ENTER
+            ]
+        ) # Finds, clicks on, and sends keys to main field
+        click('//*[@id="flair-field"]/div/div/button') # Finds button to open 'flair' option fields
 
         ActionChains(self.driver).send_keys(Keys.END).perform()
         ActionChains(self.driver).reset_actions()
+
         while True:
             try:
                 self.driver.find_element(By.XPATH,'//*[@id="acf7f706-2050-11e6-9d2c-0e78d0cc7a07"]')
@@ -103,17 +117,10 @@ class driverVars:
                 print("Cannot find element. Trying again.")
                 time.sleep(1)
 
-        recruitingFlair = self.driver.find_element(By.XPATH,'//*[@id="acf7f706-2050-11e6-9d2c-0e78d0cc7a07"]')
-        ActionChains(self.driver).move_to_element(recruitingFlair).click(recruitingFlair).perform() #Finds correct flair and selects it
-        ActionChains(self.driver).reset_actions()
+        click('//*[@id="acf7f706-2050-11e6-9d2c-0e78d0cc7a07"]') # Finds correct flair and selects it
+        click('//*[@id="newlink-flair-dropdown"]/form/button') # Applies the flair
+        # click('//*[@id="newlink"]/div[4]/button') # Submits the new post
 
-        applyFlair = self.driver.find_element(By.XPATH,'//*[@id="newlink-flair-dropdown"]/form/button')
-        ActionChains(self.driver).move_to_element(applyFlair).click(applyFlair).perform() #Applies the flair
-        ActionChains(self.driver).reset_actions()
-
-        submitPost = self.driver.find_element(By.XPATH,'//*[@id="newlink"]/div[4]/button')
-        ActionChains(self.driver).move_to_element(submitPost).click(submitPost).perform() #Submits the new post
-        ActionChains(self.driver).reset_actions()
         while True: 
             try:
                 self.driver.find_element(By.XPATH,'//*[@id="shortlink-text"]')
