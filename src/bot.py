@@ -37,6 +37,5 @@ async def on_ready():
     print(f'{client.user} is connect to the following guild:\n')
     print(f'{client.user} has connected to Discord!')
     channel = client.get_channel(channelID)
-    messagetoSend = (messageSent, " ", link)
     await channel.send(str(messageSent) + ' ' + str(link))
 client.run(token)

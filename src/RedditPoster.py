@@ -19,8 +19,8 @@ nowDay = '{:02d}'.format(now.day)
 nowHour = '{:02d}'.format(now.hour)
 nowDayInt = int(nowDay)
 nowHourInt = int(nowHour)
-ans = 3600  
-ansDay = 86400
+secondsInHour = 60 * 60  
+secondsInDay = 24 * secondsInHour
 days = [1, 4, 7, 9, 12, 14, 16, 18, 20, 22, 24, 27]
 hour = 10
 
@@ -151,26 +151,59 @@ class MyWindow:
 
     def postLooper(self): #Looping function for posting
         while True:
-            if nowDayInt == days & nowHourInt == hour:
+            if nowDayInt in days & nowHourInt == hour:
                 driverVars.post_loop(self, self.Title, self.firstPara, self.secondPara, self.groupName, self.groupStyle, self.language, self.opTimes, self.opTypes)
-                time.sleep(ansDay - 1)
+                time.sleep(secondsInDay - 1)
             else:
                 print("Sleeping. Current time:", driverVars.get_time(self))
-                time.sleep(ans)
+                time.sleep(secondsInHour)
+
+    def entryUseLast(self):
+        try:    #SQL grabber (Database -> GUI)
+            sql = '''
+            select * from inputMemory
+            '''
+            cur.execute(sql)
+            records = cur.fetchall()
+            for row in records:
+                Username = row[0]
+                password = row[1]
+                Title = row[2]
+                firstPara = row[3]
+                secondPara = row[4]
+                groupName = row[5]
+                groupStyle = row[6]
+                language = row[7]
+                opTimes = row[8]
+                opTypes = row[9]
+
+                self.usrName1.insert(0, Username)
+                self.passW1.insert(0, password)
+                self.title1.insert(0, Title)
+                self.frstP1.insert(0, firstPara)
+                self.scndP1.insert(0, secondPara)
+                self.grpN1.insert(0, groupName)
+                self.grpSty1.insert(0, groupStyle)
+                self.lng1.insert(0, language)
+                self.opTime1.insert(0, opTimes)
+                self.opType1.insert(0, opTypes)
+        except sqlite3.Error as error:
+            print("Failed to pull.")
+
 
     def updateTask(self, conn, task): #SQL updater (GUI->Database)
         sql = '''
-        Update inputMemory
-        set username=?,
-        password=?,
-        title=?,
-        firstpara=?,
-        secondpara=?,
-        groupname=?, 
-        groupstyle=?, 
-        language=?, 
-        optime=?, 
-        optype=?
+        UPDATE inputMemory
+        SET username=?,
+            password=?,
+            title=?,
+            firstpara=?,
+            secondpara=?,
+            groupname=?, 
+            groupstyle=?, 
+            language=?, 
+            optime=?, 
+            optype=?
         '''
         cur = conn.cursor()
         cur.execute(sql, task)
@@ -178,38 +211,16 @@ class MyWindow:
 
     def goFunction(self): #Main Logic
 
-        if self.useLast.get() == 0:
-            self.Username = self.usrName1.get()
-            self.password = self.passW1.get()
-            self.Title = self.title1.get()
-            self.firstPara = self.frstP1.get()
-            self.secondPara = self.scndP1.get()
-            self.groupName = self.grpN1.get()
-            self.groupStyle = self.grpSty1.get()
-            self.language = self.lng1.get()
-            self.opTimes = self.opTime1.get()
-            self.opTypes = self.opType1.get()
-        else:
-            try:    #SQL grabber (Database -> GUI)
-                sql = '''
-                select * from inputMemory
-                '''
-                cur.execute(sql)
-                records = cur.fetchall()
-                for row in records:
-                    self.Username = row[0]
-                    self.password = row[1]
-                    self.Title = row[2]
-                    self.firstPara = row[3]
-                    self.secondPara = row[4]
-                    self.groupName = row[5]
-                    self.groupStyle = row[6]
-                    self.language = row[7]
-                    self.opTimes = row[8]
-                    self.opTypes = row[9]
-
-            except sqlite3.Error as error:
-                print("Cannot pull records. There may not be any.")
+        self.Username = self.usrName1.get()
+        self.password = self.passW1.get()
+        self.Title = self.title1.get()
+        self.firstPara = self.frstP1.get()
+        self.secondPara = self.scndP1.get()
+        self.groupName = self.grpN1.get()
+        self.groupStyle = self.grpSty1.get()
+        self.language = self.lng1.get()
+        self.opTimes = self.opTime1.get()
+        self.opTypes = self.opType1.get()
 
         with conn: #I dont even remember what this does, just that its important
             self.updateTask(conn, (self.Username, self.password, self.Title, self.firstPara, self.secondPara, self.groupName, self.groupStyle, self.language, self.opTimes, self.opTypes))
@@ -297,13 +308,12 @@ class MyWindow:
 
         #repeat button
         self.repeatScript = tk.IntVar()
-        self.repeatTOF = tk.Checkbutton(window, text="Loop Process?", variable=self.repeatScript).grid(row=24, column=1)
+        tk.Checkbutton(window, text="Loop Process?", variable=self.repeatScript).grid(row=24, column=1)
         #Use last inputs
-        self.useLast = tk.IntVar()
-        self.useLastInputs = tk.Checkbutton(window, text="Use last inputs?", variable=self.useLast).grid(row=25, column=1)
+        tk.Button(window, text="Use last inputs?", command=self.entryUseLast).grid(row=25, column=1)
         #Headless
         self.runHeadless = tk.IntVar()
-        self.headless = tk.Checkbutton(window, text="Run Headless?", variable=self.runHeadless).grid(row=26, column=1)
+        tk.Checkbutton(window, text="Run Headless?", variable=self.runHeadless).grid(row=26, column=1)
 
         #go button
         tk.Button(window, text="Go", command=self.goFunction).grid(row=27, column=1)
