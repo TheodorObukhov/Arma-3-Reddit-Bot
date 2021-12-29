@@ -10,7 +10,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 import sqlite3
-
+from migrate import *
 #global params
 window = tk.Tk()
 webPage = ("https://old.reddit.com/r/FindAUnit/") 
@@ -24,10 +24,23 @@ secondsInDay = 24 * secondsInHour
 days = [1, 4, 7, 9, 12, 14, 16, 18, 20, 22, 24, 27]
 hour = 10
 
-
 #SQLITE3 connection
 conn = sqlite3.connect(r"PosterDB")
 cur = conn.cursor()
+
+cur.execute(''' SELECT count(*) FROM sqlite_master WHERE type='table' AND name='botInfo' ''')
+
+if cur.fetchone()[0]==1:
+    #botInfoCreate(cur)
+    print("one")
+conn.commit()
+
+cur.execute(''' SELECT count(*) FROM sqlite_master WHERE type='table' AND name='inputMemory' ''')
+if cur.fetchone()[0]==0:
+    print("one")
+    #inputMemoryCreate(cur)
+conn.commit()
+
 
 #Selenium Actions
 class driverVars:
@@ -270,7 +283,7 @@ class MyWindow:
         self.message = self.botMessage1.get()
         if self.UpdateBotInfoFunc:
             self.botInfoUpdate()
-            
+
         with conn: #Updates the SQL database with the new info
             self.updateTask(conn, (self.Username, self.password, self.Title, self.firstPara, self.secondPara, self.groupName, self.groupStyle, self.language, self.opTimes, self.opTypes, self.discord))
             self.updateTaskBot(conn, (self.token, self.server, self.botChannel, self.message))
