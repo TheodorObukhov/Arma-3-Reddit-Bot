@@ -29,18 +29,14 @@ conn = sqlite3.connect(r"PosterDB")
 cur = conn.cursor()
 
 cur.execute(''' SELECT count(*) FROM sqlite_master WHERE type='table' AND name='botInfo' ''')
-
-if cur.fetchone()[0]==1:
-    #botInfoCreate(cur)
-    print("one")
+if cur.fetchone()[0]==0:
+    botInfoCreate(cur)
 conn.commit()
 
 cur.execute(''' SELECT count(*) FROM sqlite_master WHERE type='table' AND name='inputMemory' ''')
 if cur.fetchone()[0]==0:
-    print("one")
-    #inputMemoryCreate(cur)
+    inputMemoryCreate(cur)
 conn.commit()
-
 
 #Selenium Actions
 class driverVars:
@@ -288,7 +284,7 @@ class MyWindow:
             self.updateTask(conn, (self.Username, self.password, self.Title, self.firstPara, self.secondPara, self.groupName, self.groupStyle, self.language, self.opTimes, self.opTypes, self.discord))
             self.updateTaskBot(conn, (self.token, self.server, self.botChannel, self.message))
 
-        if self.runHeadless.get() == 1:
+        if self.runHeadless.get() == 1: #guess bro
             headlessMode = True
         else:
             headlessMode = False
