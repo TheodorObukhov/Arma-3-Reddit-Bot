@@ -1,7 +1,7 @@
 **INSTALLATION**
 Download all the files. Open terminal with C:/path/to/requirements.txt. Run `pip install -r requirements.txt`
 
-**Example Format:**
+**Example Format(THIS IS NOT A RECRUITMENT SCHEME, LITERALLY JUST AN EXAMPLE):**
 _title_ = "[A3][Recruiting][Semi-Serious Milsim][US][New Players Welcome] Task Force Orion"
 
 _First paragraph_ = "Other info: Founded in 2020, Task Force Orion strives in bringing a realistic yet fun milsim experience to its members. 
