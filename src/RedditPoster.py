@@ -130,7 +130,7 @@ class driverVars:
 
         click('//*[@id="acf7f706-2050-11e6-9d2c-0e78d0cc7a07"]') # Finds correct flair and selects it
         click('//*[@id="newlink-flair-dropdown"]/form/button') # Applies the flair
-        # click('//*[@id="newlink"]/div[4]/button') # Submits the new post
+        click('//*[@id="newlink"]/div[4]/button') # Submits the new post
 
         while True: 
             try:
@@ -407,3 +407,5 @@ MyWin= MyWindow(window)
 window.title("Reddit Poster")
 window.geometry("500x600")
 window.mainloop()
+
+#TO DO: Run GUI in different thread to avoid freezing
