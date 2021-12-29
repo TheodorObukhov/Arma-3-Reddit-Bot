@@ -1,16 +1,19 @@
 #Reddit Poster
 import datetime
+import sqlite3
 import time
 import tkinter as tk
+
 from selenium import webdriver
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from webdriver_manager.chrome import ChromeDriverManager
-import sqlite3
+
 from migrate import *
+
 #global params
 window = tk.Tk()
 webPage = ("https://old.reddit.com/r/FindAUnit/") 
@@ -45,6 +48,7 @@ class driverVars:
 
     def WebLaunch(self, user, passW, headless): #Main webdriver launch
         options = Options()
+        print("Web Launch Start")
         if headless == True:
             options.headless = True
             self.driver = webdriver.Chrome(executable_path=ChromeDriverManager().install(), options=options)
@@ -53,7 +57,6 @@ class driverVars:
             options.headless = False
             self.driver = webdriver.Chrome(executable_path=ChromeDriverManager().install(), options=options)
             self.driver.get(webPage)
-
         while True:
             try:
                 self.driver.find_element(By.XPATH,'//*[@id="login_login-main"]/input[2]')
@@ -61,15 +64,18 @@ class driverVars:
             except NoSuchElementException:
                 print("Cannot find element. Trying again.")
                 time.sleep(1)
+        print("Web Launch Success")
         username = self.driver.find_element(By.XPATH,'//*[@id="login_login-main"]/input[2]') 
         ActionChains(self.driver).move_to_element(username).click(username).send_keys(user).perform() #Username input
+        print("Username Input Success")
         password = self.driver.find_element(By.XPATH, '//*[@id="login_login-main"]/input[3]')
         ActionChains(self.driver).reset_actions()
         ActionChains(self.driver).move_to_element(password).click(password).send_keys(passW).perform() #Password input
+        print("Password Input Success")
         signin = self.driver.find_element(By.XPATH,'//*[@id="login_login-main"]/div[4]/button').click() #Sign in
-        print("Signed In.")
 
     def post_loop(self, title, mainStatement, secondStatement, groupStatement, styleStatement, languageStatement, opTimes, opType, discord):
+        print("Post Loop Start")
         while True:
             try:
                 self.driver.find_element(By.XPATH,'/html/body/div[3]/div[2]/div/div/a')
@@ -77,6 +83,10 @@ class driverVars:
             except NoSuchElementException:
                 print("Cannot find element. Trying again.")
                 time.sleep(1)
+                x =+ 1
+                if x == 10:
+                    print("No sign in. Credentials may be incorrect.")
+                    break
 
         def click(path, keys=[]):
             btn = self.driver.find_element(By.XPATH, path)
@@ -86,8 +96,11 @@ class driverVars:
             ActionChains(self.driver).reset_actions()
             
         click('/html/body/div[3]/div[2]/div/div/a') #Finds and clicks on 'Post' button
+        print("Post button found & clicked")
         click('//*[@id="newlink"]/ul/li[2]/a') # Finds and click on 'text' button
+        print("Text button found & clicked")
         click('//*[@id="title-field"]/div/textarea', [title]) # Finds, clicks on, and sends keys to Title field
+        print("Title field found & sent")
         click(
             '//*[@id="text-field"]/div/div/div/div[1]/textarea',
             [
@@ -116,7 +129,7 @@ class driverVars:
             ]
         ) # Finds, clicks on, and sends keys to main field
         click('//*[@id="flair-field"]/div/div/button') # Finds button to open 'flair' option fields
-
+        print("Found flair option")
         ActionChains(self.driver).send_keys(Keys.END).perform()
         ActionChains(self.driver).reset_actions()
 
@@ -127,10 +140,12 @@ class driverVars:
             except NoSuchElementException:
                 print("Cannot find element. Trying again.")
                 time.sleep(1)
-
+        print("Found correct flair")
         click('//*[@id="acf7f706-2050-11e6-9d2c-0e78d0cc7a07"]') # Finds correct flair and selects it
         click('//*[@id="newlink-flair-dropdown"]/form/button') # Applies the flair
+        print("Applied flair")
         click('//*[@id="newlink"]/div[4]/button') # Submits the new post
+        print("Submitted post")
 
         while True: 
             try:
@@ -139,6 +154,7 @@ class driverVars:
             except NoSuchElementException:
                 print("Cannot find element. Trying again.")
                 time.sleep(1)
+        print("Found short link")
         element = self.driver.find_element(By.XPATH,'//*[@id="shortlink-text"]')
         redditLink = element.get_attribute('value')
         print("Success! Posted","\n" "Day:",nowDay,"\n" "Hour:",nowHour,"\n" "link:", redditLink)
