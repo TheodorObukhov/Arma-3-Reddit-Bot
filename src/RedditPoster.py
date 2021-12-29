@@ -59,7 +59,7 @@ class driverVars:
         signin = self.driver.find_element(By.XPATH,'//*[@id="login_login-main"]/div[4]/button').click() #Sign in
         print("Signed In.")
 
-    def post_loop(self, title, mainStatement, secondStatement, groupStatement, styleStatement, languageStatement, opTimes, opType):
+    def post_loop(self, title, mainStatement, secondStatement, groupStatement, styleStatement, languageStatement, opTimes, opType, discord):
         while True:
             try:
                 self.driver.find_element(By.XPATH,'/html/body/div[3]/div[2]/div/div/a')
@@ -101,7 +101,8 @@ class driverVars:
                 Keys.ENTER,
                 secondStatement,
                 Keys.ENTER,
-                Keys.ENTER
+                Keys.ENTER,
+                discord
             ]
         ) # Finds, clicks on, and sends keys to main field
         click('//*[@id="flair-field"]/div/div/button') # Finds button to open 'flair' option fields
@@ -152,44 +153,70 @@ class MyWindow:
     def postLooper(self): #Looping function for posting
         while True:
             if nowDayInt in days & nowHourInt == hour:
-                driverVars.post_loop(self, self.Title, self.firstPara, self.secondPara, self.groupName, self.groupStyle, self.language, self.opTimes, self.opTypes)
+                driverVars.post_loop(self, self.Title, self.firstPara, self.secondPara, self.groupName, self.groupStyle, self.language, self.opTimes, self.opTypes, self.discord)
                 time.sleep(secondsInDay - 1)
             else:
                 print("Sleeping. Current time:", driverVars.get_time(self))
                 time.sleep(secondsInHour)
 
-    def entryUseLast(self):
-        try:    #SQL grabber (Database -> GUI)
-            sql = '''
-            select * from inputMemory
-            '''
-            cur.execute(sql)
-            records = cur.fetchall()
-            for row in records:
-                Username = row[0]
-                password = row[1]
-                Title = row[2]
-                firstPara = row[3]
-                secondPara = row[4]
-                groupName = row[5]
-                groupStyle = row[6]
-                language = row[7]
-                opTimes = row[8]
-                opTypes = row[9]
+    def UseLast(self):
+        def entryUseLast(self):
+            try:    #SQL grabber (Database -> GUI)
+                sql = '''
+                select * from inputMemory
+                '''
+                cur.execute(sql)
+                records = cur.fetchall()
+                for row in records:
+                    Username = row[0]
+                    password = row[1]
+                    Title = row[2]
+                    firstPara = row[3]
+                    secondPara = row[4]
+                    groupName = row[5]
+                    groupStyle = row[6]
+                    language = row[7]
+                    opTimes = row[8]
+                    opTypes = row[9]
+                    discord = row[10]
 
-                self.usrName1.insert(0, Username)
-                self.passW1.insert(0, password)
-                self.title1.insert(0, Title)
-                self.frstP1.insert(0, firstPara)
-                self.scndP1.insert(0, secondPara)
-                self.grpN1.insert(0, groupName)
-                self.grpSty1.insert(0, groupStyle)
-                self.lng1.insert(0, language)
-                self.opTime1.insert(0, opTimes)
-                self.opType1.insert(0, opTypes)
-        except sqlite3.Error as error:
-            print("Failed to pull.")
+                    self.usrName1.insert(0, Username)
+                    self.passW1.insert(0, password)
+                    self.title1.insert(0, Title)
+                    self.frstP1.insert(0, firstPara)
+                    self.scndP1.insert(0, secondPara)
+                    self.grpN1.insert(0, groupName)
+                    self.grpSty1.insert(0, groupStyle)
+                    self.lng1.insert(0, language)
+                    self.opTime1.insert(0, opTimes)
+                    self.opType1.insert(0, opTypes)
+                    self.discord1.insert(0, discord)
+            except sqlite3.Error as error:
+                print("Failed to pull.")
+        def entryUseLastBot(self):
+            try:
+                sql = '''
+                select * from botInfo
+                '''
+                cur.execute(sql)
+                records = cur.fetchall()
+                for row in records:
+                    token = row[0]
+                    server = row[1]
+                    channel = row[2]
+                    message = row[3]
 
+                    self.botToken1.insert(0, token)
+                    self.botGuild1.insert(0, server)
+                    self.botChannel1.insert(0, channel)
+                    self.botMessage1.insert(0, message)
+            except sqlite3.Error as error:
+                print("Failed to pull.")
+        entryUseLast(self)
+        if self.OnandOffBot.get() == 1:
+            entryUseLastBot(self)
+        else:
+            exit
 
     def updateTask(self, conn, task): #SQL updater (GUI->Database)
         sql = '''
@@ -203,10 +230,21 @@ class MyWindow:
             groupstyle=?, 
             language=?, 
             optime=?, 
-            optype=?
+            optype=?,
+            discord=?
         '''
-        cur = conn.cursor()
         cur.execute(sql, task)
+        conn.commit()
+
+    def updateTaskBot(self, conn, task):
+        sqlBot = '''
+        UPDATE botInfo
+        SET token=?,
+            serverID=?,
+            channelID=?,
+            message=?
+        '''
+        cur.execute(sqlBot, task)
         conn.commit()
 
     def goFunction(self): #Main Logic
@@ -221,11 +259,18 @@ class MyWindow:
         self.language = self.lng1.get()
         self.opTimes = self.opTime1.get()
         self.opTypes = self.opType1.get()
+        self.discord = self.discord1.get()
 
-        with conn: #I dont even remember what this does, just that its important
-            self.updateTask(conn, (self.Username, self.password, self.Title, self.firstPara, self.secondPara, self.groupName, self.groupStyle, self.language, self.opTimes, self.opTypes))
-        
-        if self.runHeadless.get() == 1: #Fucking guess what this means
+        self.token = self.botToken1.get()
+        self.server = self.botGuild1.get()
+        self.botChannel = self.botChannel1.get()
+        self.message = self.botMessage1.get()
+
+        with conn: #Updates the SQL database with the new info
+            self.updateTask(conn, (self.Username, self.password, self.Title, self.firstPara, self.secondPara, self.groupName, self.groupStyle, self.language, self.opTimes, self.opTypes, self.discord))
+            self.updateTaskBot(conn, (self.token, self.server, self.botChannel, self.message))
+
+        if self.runHeadless.get() == 1:
             headlessMode = True
         else:
             headlessMode = False
@@ -234,22 +279,22 @@ class MyWindow:
             if self.repeatScript.get() == 1:
                 driverVars.WebLaunch(self, self.Username, self.password, headlessMode)
                 if nowDayInt != days or nowHourInt != hour:
-                    driverVars.post_loop(self, self.Title, self.firstPara, self.secondPara, self.groupName, self.groupStyle, self.language, self.opTimes, self.opTypes)
+                    driverVars.post_loop(self, self.Title, self.firstPara, self.secondPara, self.groupName, self.groupStyle, self.language, self.opTimes, self.opTypes, self.discord)
                 self.botPost(self)
                 self.postLooper()     
             else:
                 driverVars.WebLaunch(self, self.Username, self.password, headlessMode)
-                driverVars.post_loop(self, self.Title, self.firstPara, self.secondPara, self.groupName, self.groupStyle, self.language, self.opTimes, self.opTypes)
+                driverVars.post_loop(self, self.Title, self.firstPara, self.secondPara, self.groupName, self.groupStyle, self.language, self.opTimes, self.opTypes, self.discord)
                 self.botPost(self)
         else:
             if self.repeatScript.get() == 1:
                 driverVars.WebLaunch(self, self.Username, self.password, headlessMode)
                 if nowDayInt != days or nowHourInt != hour:
-                    driverVars.post_loop(self, self.Title, self.firstPara, self.secondPara, self.groupName, self.groupStyle, self.language, self.opTimes, self.opTypes)
+                    driverVars.post_loop(self, self.Title, self.firstPara, self.secondPara, self.groupName, self.groupStyle, self.language, self.opTimes, self.opTypes, self.discord)
                 self.postLooper()     
             else:
                 driverVars.WebLaunch(self, self.Username, self.password, headlessMode)
-                driverVars.post_loop(self, self.Title, self.firstPara, self.secondPara, self.groupName, self.groupStyle, self.language, self.opTimes, self.opTypes)
+                driverVars.post_loop(self, self.Title, self.firstPara, self.secondPara, self.groupName, self.groupStyle, self.language, self.opTimes, self.opTypes, self.discord)
 
     def enableDisable(self): #Bot Enable/Disable
         if self.OnandOffBot.get() == 1:
@@ -306,15 +351,19 @@ class MyWindow:
         self.opType1 = tk.Entry(window, width= 25)
         self.opType1.grid(row=21, column=1)
 
+        self.discordlbl = tk.Label(window, text="Discord Link:").grid(row=22, column=1)
+        self.discord1 = tk.Entry(window, width=25)
+        self.discord1.grid(row=23, column=1)
+
         #repeat button
         self.repeatScript = tk.IntVar()
         tk.Checkbutton(window, text="Loop Process?", variable=self.repeatScript).grid(row=24, column=1)
-        #Use last inputs
-        tk.Button(window, text="Use last inputs?", command=self.entryUseLast).grid(row=25, column=1)
         #Headless
         self.runHeadless = tk.IntVar()
-        tk.Checkbutton(window, text="Run Headless?", variable=self.runHeadless).grid(row=26, column=1)
+        tk.Checkbutton(window, text="Run Headless?", variable=self.runHeadless).grid(row=25, column=1)
 
+        #Use last inputs
+        tk.Button(window, text="Use last inputs?", command=self.UseLast).grid(row=26, column=1)
         #go button
         tk.Button(window, text="Go", command=self.goFunction).grid(row=27, column=1)
 
