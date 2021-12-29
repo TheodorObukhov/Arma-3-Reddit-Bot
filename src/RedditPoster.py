@@ -24,8 +24,9 @@ secondsInDay = 24 * secondsInHour
 days = [1, 4, 7, 9, 12, 14, 16, 18, 20, 22, 24, 27]
 hour = 10
 
+
 #SQLITE3 connection
-conn = sqlite3.connect(r"/home/theodorobukhov/Documents/RecruitingScripts/PassiveRecruit/RedditPoster/PosterDB")
+conn = sqlite3.connect(r"PosterDB")
 cur = conn.cursor()
 
 #Selenium Actions
@@ -130,22 +131,22 @@ class driverVars:
                 print("Cannot find element. Trying again.")
                 time.sleep(1)
         element = self.driver.find_element(By.XPATH,'//*[@id="shortlink-text"]')
-        RedditLink = element.get_attribute('value')
-        print("Success! Posted","\n" "Day:",nowDay,"\n" "Hour:",nowHour,"\n" "link:", RedditLink)
+        redditLink = element.get_attribute('value')
+        print("Success! Posted","\n" "Day:",nowDay,"\n" "Hour:",nowHour,"\n" "link:", redditLink)
+
         linkUpdate = '''Update botInfo set link=?'''
-        linkToUpdate = (RedditLink)
-        cur.execute(linkUpdate, linkToUpdate) #Updates SQL Database with new link
+        cur.execute(linkUpdate, (redditLink,)) #Updates SQL Database with new link
         conn.commit()
 
 #GUI App + Main logic
 class MyWindow:
-    def botPost(self): #Bot poster
-        if self.useLast.get() == 0:
-            updatequery = '''Update botInfo set token=?, serverID=?,channelID=?,message=?'''
-            coloumn_vals = (self.botToken1.get(), self.botGuild1.get(), self.botChannel1.get(), self.botMessage1.get())
-            cur.execute(updatequery, coloumn_vals)
-            conn.commit()
+    def botInfoUpdate(self):
+        updatequery = '''Update botInfo set token=?, serverID=?,channelID=?,message=?'''
+        coloumn_vals = (self.botToken1.get(), self.botGuild1.get(), self.botChannel1.get(), self.botMessage1.get())
+        cur.execute(updatequery, coloumn_vals)
+        conn.commit()
 
+    def botPost(self): #Bot poster
         from bot import on_ready
         on_ready()
         print("Link posted.")
@@ -161,6 +162,7 @@ class MyWindow:
 
     def UseLast(self):
         def entryUseLast(self):
+            self.UpdateBotInfoFunc = True
             try:    #SQL grabber (Database -> GUI)
                 sql = '''
                 select * from inputMemory
@@ -193,6 +195,7 @@ class MyWindow:
                     self.discord1.insert(0, discord)
             except sqlite3.Error as error:
                 print("Failed to pull.")
+
         def entryUseLastBot(self):
             try:
                 sql = '''
@@ -265,7 +268,9 @@ class MyWindow:
         self.server = self.botGuild1.get()
         self.botChannel = self.botChannel1.get()
         self.message = self.botMessage1.get()
-
+        if self.UpdateBotInfoFunc:
+            self.botInfoUpdate()
+            
         with conn: #Updates the SQL database with the new info
             self.updateTask(conn, (self.Username, self.password, self.Title, self.firstPara, self.secondPara, self.groupName, self.groupStyle, self.language, self.opTimes, self.opTypes, self.discord))
             self.updateTaskBot(conn, (self.token, self.server, self.botChannel, self.message))
@@ -280,12 +285,12 @@ class MyWindow:
                 driverVars.WebLaunch(self, self.Username, self.password, headlessMode)
                 if nowDayInt != days or nowHourInt != hour:
                     driverVars.post_loop(self, self.Title, self.firstPara, self.secondPara, self.groupName, self.groupStyle, self.language, self.opTimes, self.opTypes, self.discord)
-                self.botPost(self)
+                self.botPost()
                 self.postLooper()     
             else:
                 driverVars.WebLaunch(self, self.Username, self.password, headlessMode)
                 driverVars.post_loop(self, self.Title, self.firstPara, self.secondPara, self.groupName, self.groupStyle, self.language, self.opTimes, self.opTypes, self.discord)
-                self.botPost(self)
+                self.botPost()
         else:
             if self.repeatScript.get() == 1:
                 driverVars.WebLaunch(self, self.Username, self.password, headlessMode)
@@ -309,6 +314,8 @@ class MyWindow:
             self.botMessage1.configure(state='disabled')
 
     def __init__(self, win): #GUI
+        self.UpdateBotInfoFunc = False
+
         lbl = tk.Label(window, text="Please fill out the following fields").grid(row=1, column=1)
         #basic inputs
         self.usrNameLbl = tk.Label(window, text="Username:").grid(row=2, column=1)

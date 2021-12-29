@@ -1,0 +1,3 @@
+###### REQUIREMENTS REDDIT POSTER
+selenium
+webdriver-manager
