@@ -8,7 +8,7 @@ import sqlite3
 #client
 client = discord.Client()
 load_dotenv()
-conn = sqlite3.connect(r"/home/theodorobukhov/Documents/RecruitingScripts/PassiveRecruit/RedditPoster/PosterDB")
+conn = sqlite3.connect(r"PosterDB")
 cur = conn.cursor()
 
 #SQL pull
