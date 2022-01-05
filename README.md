@@ -1,5 +1,4 @@
-**PREREQUISITES**
-
+**PREREQUISITES**  
 Python
 
 **INSTALLATION**
