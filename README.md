@@ -1,3 +1,6 @@
+**PREREQUISITES**
+Python
+
 **INSTALLATION**
 Download all the files. Open terminal with C:/path/to/requirements.txt. Run `pip install -r requirements.txt`
 
